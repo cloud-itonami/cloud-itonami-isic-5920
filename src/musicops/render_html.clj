@@ -259,6 +259,15 @@
 
 (defn- path-label [p] (str/join "/" (map name p)))
 
+(defn- run-approver
+  "The human who approved THIS run, read off this run's own audit
+  trail, or nil if the run was never escalated to a human."
+  [run]
+  (->> (get-in run [:state :audit])
+       (filter #(= :approval-granted (:t %)))
+       last
+       :by))
+
 (defn- audit-approvals
   "`:approval-granted` facts across every run's audit trail -- the
   approval is visible HERE regardless of what the store retains."
@@ -267,6 +276,34 @@
        (mapcat #(get-in % [:state :audit]))
        (filter #(= :approval-granted (:t %)))
        vec))
+
+(defn- pair-records-with-runs
+  "Pair each committed record in `store/coordination-log` with the run
+  that produced it.
+
+  Do NOT join on [op catalog-id]: that key is NOT unique -- two runs
+  may legitimately log the same op against the same catalog entry at
+  different phases, and the earlier run's approval then leaks onto the
+  later auto-committed write, crediting a human who never saw it.
+  (Observed: the phase-1 approved log of `catalog-1` and the phase-3
+  auto-commit of `catalog-1` collide on that key.)
+
+  `musicops.operation`'s `:commit` node writes exactly the `:record`
+  channel it was handed, so each stored record is `=` to its run's own
+  final `:record`. Pair positionally and VERIFY that equality; throw
+  rather than emit a page that attributes a write to the wrong run."
+  [records runs]
+  (let [committed (filterv #(= :commit (get-in % [:state :disposition])) runs)]
+    (when-not (= (count records) (count committed))
+      (throw (ex-info "refusing to render: committed-record count does not match the number of committing runs"
+                      {:records (count records) :committing-runs (count committed)})))
+    (mapv (fn [record run]
+            (when-not (= record (get-in run [:state :record]))
+              (throw (ex-info "refusing to render: a committed record does not match its run's final :record"
+                              {:run (:id run) :record record
+                               :run-record (get-in run [:state :record])})))
+            [record run])
+          records committed)))
 
 (defn- approver-retention
   "PROBE, do not assume. Some stores in this fleet drop the approver on
@@ -543,18 +580,19 @@
               "labelled <em>audit only &mdash; not retained in record</em>."))))
 
 (defn- coordination-section [db runs retention]
-  (let [records (vec (store/coordination-log db))
-        by-audit (->> (audit-approvals runs)
-                      (reduce (fn [m f] (update m [(:op f) (:catalog-id f)] (fnil conj []) (:by f))) {}))]
+  (let [pairs (pair-records-with-runs (vec (store/coordination-log db)) runs)]
     (section
      "Committed coordination log (SSoT writes)"
-     (str "The only writes this build made. " (retention-note retention))
-     (table ["#" "Op" "Catalog" "Committed value" "Approver"]
+     (str "The only writes this build made. Each row is paired with the run that "
+          "produced it by record identity, not by op/catalog &mdash; so an approval "
+          "granted in one run can never be credited to a different run's "
+          "auto-commit. " (retention-note retention))
+     (table ["#" "Run" "Op" "Catalog" "Committed value" "Approver"]
             (map-indexed
-             (fn [i {:keys [op catalog-id value] :as record}]
-               (let [audit-by (first (get by-audit [op catalog-id]))
-                     {:keys [by source path]} (record-approver record audit-by)]
+             (fn [i [{:keys [op catalog-id value] :as record} run]]
+               (let [{:keys [by source path]} (record-approver record (run-approver run))]
                  (tr (esc (inc i))
+                     (code (:id run))
                      (code (kw-str op))
                      (code catalog-id)
                      (code (pr-str value))
@@ -566,7 +604,7 @@
                        (str "<span class=\"warn\">" (esc by)
                             "</span> <span class=\"muted\">(audit only &mdash; not retained in record)</span>")
                        :else "<span class=\"muted\">auto-committed &mdash; no approval required</span>"))))
-             records)))))
+             pairs)))))
 
 ;; ----------------------------- document -----------------------------
 
