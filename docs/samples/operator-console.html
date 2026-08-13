@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>cloud-itonami-isic-5920 &middot; musicops operator console</title><style>
+<title>cloud-itonami-isic-5920 &middot; Sound Recording and Music Publishing Activities operator console</title><style>
 /* jp-go-digital-design-system — vendored CSS
  * Source: https://github.com/digital-go-jp/design-system-example-components-html
  * Upstream commit: 3b34f4c3553fa3bee90bfd8b6fe962ac3055107d — MIT License, Copyright (c) 2025 デジタル庁
@@ -2467,7 +2467,7 @@ footer,.footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid va
 img,svg { max-width: 100%; height: auto; }
 </style></head><body>
 <header class="bar">
-  <h1>Sound recording &amp; music publishing (ISIC 5920) &mdash; Operator Console</h1>
+  <h1>Sound Recording and Music Publishing Activities (ISIC 5920) &mdash; Operator Console</h1>
   <span class="badge">read-only sample &middot; governor-gated &middot; never finalizes a rights licence or a royalty payment</span>
 </header>
 <main>
@@ -2475,6 +2475,24 @@ img,svg { max-width: 100%; height: auto; }
     <h2>What this page is</h2>
     <p>Generated at build time by <code>musicops.render-html</code> (<code>clojure -M:dev:render-html</code>) by actually running this repo's actor: <code>musicops.operation</code> (a langgraph-clj StateGraph) &rarr; <code>musicops.advisor</code> &rarr; <code>musicops.governor</code> &rarr; <code>musicops.phase</code> &rarr; <code>musicops.store</code>. Every row below is read back out of that run or out of the seeded store. Nothing is hand-typed, and the build fails outright if the governor's HARD holds do not fire.</p>
     <p class="muted">12 coordination runs &middot; 12 audit facts &middot; 5 SSoT writes &middot; 5 HARD governor holds. Deterministic: no clock, no random ids &mdash; two consecutive builds are byte-identical.</p>
+  </section>
+  <section class="card">
+    <h2>Blueprint identity</h2>
+    <p class="muted">Read at build time from <code>blueprint.edn</code> &mdash; the same registered entity the fleet indexes this repo by. The page title and heading above are derived from these fields, so they cannot drift from the blueprint.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Blueprint id <span class="muted"><code>:itonami.blueprint/id</code></span></td><td>cloud-itonami-isic-5920</td></tr>
+        <tr><td>Registered activity <span class="muted"><code>:itonami.blueprint/name</code></span></td><td>Sound Recording and Music Publishing Activities</td></tr>
+        <tr><td>ISIC rev.4 <span class="muted"><code>:itonami.blueprint/isic-rev4</code></span></td><td>5920</td></tr>
+        <tr><td>Domain <span class="muted"><code>:itonami.blueprint/domain</code></span></td><td><code>sound-recording-music-publishing</code></td></tr>
+        <tr><td>Governor <span class="muted"><code>:itonami.blueprint/governor</code></span></td><td><code>music-ops-governor</code></td></tr>
+        <tr><td>Licence <span class="muted"><code>:itonami.blueprint/license</code></span></td><td>AGPL-3.0-or-later</td></tr>
+        <tr><td>Status <span class="muted"><code>:itonami.blueprint/status</code></span></td><td><code>public-oss</code></td></tr>
+        <tr><td>Maturity <span class="muted"><code>:itonami.blueprint/maturity</code></span></td><td><code>implemented</code></td></tr>
+        <tr><td>Social impact <span class="muted"><code>:itonami.blueprint/social-impact</code></span></td><td><code>artist-livelihoods</code> &middot; <code>rights-integrity</code> &middot; <code>creative-economy</code> &middot; <code>cultural-preservation</code></td></tr>
+      </tbody>
+    </table>
   </section>
   <section class="card">
     <h2>Catalog directory (SSoT)</h2>
@@ -2510,7 +2528,7 @@ img,svg { max-width: 100%; height: auto; }
     </table>
   </section>
   <section class="card">
-    <h2>Op gate &amp;times; rollout phase (derived from the code, not described)</h2>
+    <h2>Op gate × rollout phase (derived from the code, not described)</h2>
     <p class="muted">Each cell is computed at build time from <code>musicops.governor/allowed-ops</code>, <code>governor/always-escalate-ops</code> and <code>musicops.phase/phases</code>, so it cannot drift from the implementation. Confidence floor: <code>0.6</code>. Default phase: <code>3</code>. Note that <code>:flag-rights-concern</code> is absent from every phase's auto set AND is a member of the governor's always-escalate set &mdash; two independent layers agree that a rights concern always reaches a human.</p>
     <table>
       <thead><tr><th>Op</th><th>Writable at phase</th><th>Auto-commit at phase</th><th>Always escalates</th></tr></thead>

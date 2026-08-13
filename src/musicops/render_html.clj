@@ -11,6 +11,10 @@
   `musicops.phase` -> `musicops.store`. Nothing on the page is typed by
   hand:
 
+    - the page's own identity (activity name, ISIC code, domain,
+      governor id, licence, maturity) is read out of this repo's
+      `blueprint.edn`, so the header cannot drift from the registered
+      blueprint the way a hand-typed title does;
     - the catalog directory rows come from `musicops.store/demo-data`
       via `store/all-catalog-entries`;
     - each coordination-run row is read off the langgraph final state
@@ -45,7 +49,9 @@
 
   Usage: `clojure -M:dev:render-html [out-file]`
   (default `docs/samples/operator-console.html`)."
-  (:require [clojure.string :as str]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
             [jp-go-dds.skin]
             [langgraph.graph :as g]
             [musicops.advisor :as advisor]
@@ -56,6 +62,42 @@
 
 (def ^:private coordinator-id "coord-1")
 (def ^:private approver-id "label-ops-coordinator-1")
+
+(def ^:private blueprint-path
+  "This repo's registered ISIC blueprint, relative to the repo root
+  (the same cwd the default output path assumes)."
+  "blueprint.edn")
+
+(defn read-blueprint
+  "The blueprint entity for this repo. THROWS if it is missing or
+  empty rather than falling back to a hand-typed title -- a header
+  that silently stops tracking `blueprint.edn` is exactly the kind of
+  hand-written claim this generator exists to eliminate."
+  []
+  (let [f (io/file blueprint-path)]
+    (when-not (.exists f)
+      (throw (ex-info (str "refusing to render: " blueprint-path
+                           " not found -- run from the repo root")
+                      {:path (.getAbsolutePath f)})))
+    (let [bp (first (edn/read-string (slurp f)))]
+      (when-not (:itonami.blueprint/isic-rev4 bp)
+        (throw (ex-info (str "refusing to render: " blueprint-path
+                             " has no :itonami.blueprint/isic-rev4 entity")
+                        {:parsed bp})))
+      bp)))
+
+(def ^:private blueprint-fields
+  "The blueprint keys the identity table shows, in a FIXED order --
+  never `(keys bp)`, which would make the page depend on map ordering."
+  [[:itonami.blueprint/id "Blueprint id"]
+   [:itonami.blueprint/name "Registered activity"]
+   [:itonami.blueprint/isic-rev4 "ISIC rev.4"]
+   [:itonami.blueprint/domain "Domain"]
+   [:itonami.blueprint/governor "Governor"]
+   [:itonami.blueprint/license "Licence"]
+   [:itonami.blueprint/status "Status"]
+   [:itonami.blueprint/maturity "Maturity"]
+   [:itonami.blueprint/social-impact "Social impact"]])
 
 (def ^:private expected-hard-rules
   "Every HARD rule `musicops.governor` can raise. The scenario list
@@ -300,6 +342,28 @@
 
 ;; ----------------------------- section builders -----------------------------
 
+(defn- blueprint-value
+  "Render one blueprint value. Sequential values keep the blueprint's
+  own order -- they are not sorted or re-grouped here."
+  [v]
+  (cond
+    (sequential? v) (str/join " &middot; " (map #(code (kw-str %)) v))
+    (keyword? v)    (code (kw-str v))
+    :else           (esc v)))
+
+(defn- blueprint-section [bp]
+  (section
+   "Blueprint identity"
+   (str "Read at build time from " (code blueprint-path)
+        " &mdash; the same registered entity the fleet indexes this repo by. "
+        "The page title and heading above are derived from these fields, so they "
+        "cannot drift from the blueprint.")
+   (table ["Field" "Value"]
+          (for [[k label] blueprint-fields
+                :when (some? (get bp k))]
+            (tr (str (esc label) " <span class=\"muted\">" (code (str k)) "</span>")
+                (blueprint-value (get bp k)))))))
+
 (defn- last-fact-for [ledger catalog-id]
   (last (filter #(= catalog-id (:catalog-id %)) ledger)))
 
@@ -381,7 +445,9 @@
 
 (defn- gate-section []
   (section
-   "Op gate &times; rollout phase (derived from the code, not described)"
+   ;; NOTE a literal U+00D7, not "&times;" -- `section` escapes its
+   ;; title, so an entity here would reach the reader as raw markup.
+   "Op gate × rollout phase (derived from the code, not described)"
    (str "Each cell is computed at build time from " (code "musicops.governor/allowed-ops") ", "
         (code "governor/always-escalate-ops") " and " (code "musicops.phase/phases")
         ", so it cannot drift from the implementation. Confidence floor: "
@@ -507,17 +573,22 @@
 (defn render
   "Renders the whole console from a store `db` that has already been
   driven by `run-demo!`, plus the run states it returned."
-  [{:keys [db runs]}]
+  [{:keys [db runs blueprint]}]
+  (when-not blueprint
+    (throw (ex-info "render called without a :blueprint -- see read-blueprint" {})))
   (let [ledger (vec (store/ledger db))
-        retention (approver-retention db runs)]
+        retention (approver-retention db runs)
+        activity (:itonami.blueprint/name blueprint)
+        isic (:itonami.blueprint/isic-rev4 blueprint)]
     (str
      "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">\n"
      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-     "<title>cloud-itonami-isic-5920 &middot; musicops operator console</title><style>\n"
+     "<title>" (esc (:itonami.blueprint/id blueprint))
+     " &middot; " (esc activity) " operator console</title><style>\n"
      (jp-go-dds.skin/dds+skin)
      "\n</style></head><body>\n"
      "<header class=\"bar\">\n"
-     "  <h1>Sound recording &amp; music publishing (ISIC 5920) &mdash; Operator Console</h1>\n"
+     "  <h1>" (esc activity) " (ISIC " (esc isic) ") &mdash; Operator Console</h1>\n"
      "  <span class=\"badge\">read-only sample &middot; governor-gated &middot; never finalizes a rights licence or a royalty payment</span>\n"
      "</header>\n"
      "<main>\n"
@@ -536,6 +607,7 @@
      (esc (count (hard-holds ledger))) " HARD governor holds. Deterministic: no clock, no random "
      "ids &mdash; two consecutive builds are byte-identical.</p>\n"
      "  </section>\n"
+     (blueprint-section blueprint)
      (catalog-section db ledger)
      (runs-section runs)
      (gate-section)
@@ -577,7 +649,7 @@
         {:keys [db runs] :as result} (run-demo!)
         ledger (vec (store/ledger db))
         {:keys [governor-holds hard-holds rules]} (assert-governor-fired! ledger)
-        html (render result)]
+        html (render (assoc result :blueprint (read-blueprint)))]
     (spit out html)
     (println "wrote" out
              (str "(" (count html) " bytes, " (count runs) " runs, "
