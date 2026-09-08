@@ -51,7 +51,7 @@
   (default `docs/samples/operator-console.html`)."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [jp-go-dds.skin]
             [langgraph.graph :as g]
             [musicops.advisor :as advisor]
