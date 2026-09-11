@@ -1,0 +1,17 @@
+{:format :kotoba.cljk-origin/v1
+ :renamed-on "2026-09-11"
+ :decision "adr-2609111500-cljk-rename-all-clojure-source (com-junkawasaki/root 90-docs/adr; owner instruction 2026-09-11)"
+ :rule "value = the extension the file had before the rename. A path ending in .clj.cljk or .cljs.cljk kept it in the name because both platform files existed (or the plain target was taken)."
+ :origins
+ {"src/musicops/advisor.cljk" ".cljc"
+  "src/musicops/governor.cljk" ".cljc"
+  "src/musicops/operation.cljk" ".cljc"
+  "src/musicops/phase.cljk" ".cljc"
+  "src/musicops/render_html.cljk" ".clj"
+  "src/musicops/sim.cljk" ".cljc"
+  "src/musicops/store.cljk" ".cljc"
+  "test/musicops/advisor_test.cljk" ".clj"
+  "test/musicops/governor_contract_test.cljk" ".clj"
+  "test/musicops/governor_test.cljk" ".clj"
+  "test/musicops/phase_test.cljk" ".clj"
+  "test/musicops/store_contract_test.cljk" ".clj"}}
