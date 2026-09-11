@@ -62,11 +62,11 @@ clojure -M:run
 
 ## Test suite
 
-- `test/musicops/governor_test.clj` — unit tests of governor hard checks and scope exclusion (including a dedicated regression test that the default mock advisor's own proposals never self-trip scope-exclusion)
-- `test/musicops/advisor_test.clj` — advisor proposal shape and consistency
-- `test/musicops/phase_test.clj` — rollout phase logic
-- `test/musicops/governor_contract_test.clj` — full graph integration, audit trail
-- `test/musicops/store_contract_test.clj` — Store protocol and MemStore implementation
+- `test/musicops/governor_test.cljk` — unit tests of governor hard checks and scope exclusion (including a dedicated regression test that the default mock advisor's own proposals never self-trip scope-exclusion)
+- `test/musicops/advisor_test.cljk` — advisor proposal shape and consistency
+- `test/musicops/phase_test.cljk` — rollout phase logic
+- `test/musicops/governor_contract_test.cljk` — full graph integration, audit trail
+- `test/musicops/store_contract_test.cljk` — Store protocol and MemStore implementation
 
 ## Modules
 
