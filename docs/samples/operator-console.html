@@ -2473,7 +2473,7 @@ img,svg { max-width: 100%; height: auto; }
 <main>
   <section class="card">
     <h2>What this page is</h2>
-    <p>Generated at build time by <code>musicops.render-html</code> (<code>clojure -M:dev:render-html</code>) by actually running this repo's actor: <code>musicops.operation</code> (a langgraph-clj StateGraph) &rarr; <code>musicops.advisor</code> &rarr; <code>musicops.governor</code> &rarr; <code>musicops.phase</code> &rarr; <code>musicops.store</code>. Every row below is read back out of that run or out of the seeded store. Nothing is hand-typed, and the build fails outright if the governor's HARD holds do not fire.</p>
+    <p>Generated at build time by <code>musicops.render-html</code> (<code>kbb -M:dev:render-html</code>) by actually running this repo's actor: <code>musicops.operation</code> (a langgraph-clj StateGraph) &rarr; <code>musicops.advisor</code> &rarr; <code>musicops.governor</code> &rarr; <code>musicops.phase</code> &rarr; <code>musicops.store</code>. Every row below is read back out of that run or out of the seeded store. Nothing is hand-typed, and the build fails outright if the governor's HARD holds do not fire.</p>
     <p class="muted">12 coordination runs &middot; 12 audit facts &middot; 5 SSoT writes &middot; 5 HARD governor holds. Deterministic: no clock, no random ids &mdash; two consecutive builds are byte-identical.</p>
   </section>
   <section class="card">
@@ -2595,5 +2595,5 @@ img,svg { max-width: 100%; height: auto; }
     </table>
   </section>
 </main>
-<footer><p class="muted">cloud-itonami-isic-5920 &middot; AGPL-3.0-or-later &middot; regenerate with <code>clojure -M:dev:render-html</code></p></footer>
+<footer><p class="muted">cloud-itonami-isic-5920 &middot; AGPL-3.0-or-later &middot; regenerate with <code>kbb -M:dev:render-html</code></p></footer>
 </body></html>
