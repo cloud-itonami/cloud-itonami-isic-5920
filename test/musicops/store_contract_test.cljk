@@ -1,6 +1,6 @@
 (ns musicops.store-contract-test
   "Contract tests for `musicops.store/Store` protocol."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [musicops.store :as store]))
 
 (deftest mem-store-catalog-lookup

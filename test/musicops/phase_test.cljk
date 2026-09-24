@@ -1,6 +1,6 @@
 (ns musicops.phase-test
   "Unit tests of `musicops.phase` rollout logic."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [musicops.phase :as phase]))
 
 (def clean-verdict {:hard? false :escalate? false})

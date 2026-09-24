@@ -1,6 +1,6 @@
 (ns musicops.advisor-test
   "Unit tests of `musicops.advisor` proposal generation."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [musicops.advisor :as adv]
             [musicops.store :as store]))
 
