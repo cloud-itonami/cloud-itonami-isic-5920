@@ -49,7 +49,7 @@
 
   Usage: `kbb -M:dev:render-html [out-file]`
   (default `docs/samples/operator-console.html`)."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.io :as io]
             [kotoba.lang.text :as str]
             [jp-go-dds.skin]
