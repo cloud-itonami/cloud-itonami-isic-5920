@@ -50,7 +50,7 @@
   Usage: `kbb -M:dev:render-html [out-file]`
   (default `docs/samples/operator-console.html`)."
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
+            [kotoba.io :as io]
             [kotoba.lang.text :as str]
             [jp-go-dds.skin]
             [langgraph.graph :as g]
@@ -75,10 +75,10 @@
   hand-written claim this generator exists to eliminate."
   []
   (let [f (io/file blueprint-path)]
-    (when-not (.exists f)
+    (when-not (io/exists? f)
       (throw (ex-info (str "refusing to render: " blueprint-path
                            " not found -- run from the repo root")
-                      {:path (.getAbsolutePath f)})))
+                      {:path (io/absolute-path f)})))
     (let [bp (first (edn/read-string (slurp f)))]
       (when-not (:itonami.blueprint/isic-rev4 bp)
         (throw (ex-info (str "refusing to render: " blueprint-path
